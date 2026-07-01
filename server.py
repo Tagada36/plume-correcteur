@@ -185,6 +185,25 @@ def test_systeme(token: str = "", email: str = "test@exemple.fr"):
         return {"ok": False, "error": repr(e)}
 
 
+@app.get("/api/sio")
+def sio(token: str = "", path: str = "/tags", create_name: str = ""):
+    """Outil admin d'exploration systeme.io.
+    - Lister les tags   : /api/sio?token=JETON&path=/tags
+    - Creer un tag      : /api/sio?token=JETON&path=/tags&create_name=plume-rapport-pret
+    - Lister les champs : /api/sio?token=JETON&path=/contact_fields
+    """
+    if not ADMIN_TOKEN or token != ADMIN_TOKEN:
+        raise HTTPException(403, "Acces refuse.")
+    try:
+        if create_name:
+            status, body = systemeio._req("POST", path, {"name": create_name})
+        else:
+            status, body = systemeio._req("GET", path)
+        return {"status": status, "body": body[:3000]}
+    except Exception as e:
+        return {"error": repr(e)}
+
+
 @app.get("/api/leads")
 def export_leads(token: str = ""):
     if not ADMIN_TOKEN or token != ADMIN_TOKEN:
