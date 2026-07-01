@@ -1,4 +1,4 @@
-MISSION — RAPPORT DE CORRECTION REVIEW ME (rapport uniquement)
+MISSION  : RAPPORT DE CORRECTION REVIEW ME (rapport uniquement)
 
 Tu produis UN SEUL fichier : output/rapport_correction.docx.
 Tu NE reecris PAS le manuscrit. Tu NE produis NI manuscrit corrige, NI liste .txt,
@@ -10,7 +10,7 @@ A partir du manuscrit input.docx, reperer les fautes de langue en francais
 typographie francaise) et les presenter dans un rapport clair et professionnel aux
 couleurs de Review Me.
 
-METHODE (rapide, pour economiser les tokens — vise le minimum d'etapes)
+METHODE (rapide, pour economiser les tokens  : vise le minimum d'etapes)
 1. Extraire le texte du manuscrit. Le plus simple : un petit script Python avec
    python-docx (from docx import Document) qui lit input.docx et concatene les
    paragraphes. (Tu peux aussi utiliser scripts/unpack.py si besoin.)
@@ -21,7 +21,7 @@ METHODE (rapide, pour economiser les tokens — vise le minimum d'etapes)
 3. Generer output/rapport_correction.docx avec python-docx :
    - En-tete avec le LOGO : insere l'image "logo-reviewme.png" (presente dans le
      dossier de travail) en haut du document, taille raisonnable (~3-4 cm).
-   - Titre : "Rapport de correction" + sous-titre "Review Me — review-me.fr".
+   - Titre : "Rapport de correction" + sous-titre "Review Me, review-me.fr".
    - Charte : orange #D16927 (RVB 209,105,39) pour les titres, jaune #F7CA00 en
      accent ; texte noir lisible ; A4.
    - INTRO (phrase passe-partout, neutre) : commence par un court paragraphe
@@ -34,10 +34,10 @@ METHODE (rapide, pour economiser les tokens — vise le minimum d'etapes)
    - Corps : les corrections regroupees par categorie (Orthographe, Grammaire &
      accords, Conjugaison, Typographie, Ponctuation), sous forme de tableau ou de
      liste numerotee : n° · fautif -> corrige · contexte · (explication courte).
-   - SECTION FINALE — APPEL A L'ACTION (obligatoire) : ajoute a la fin un encart
+   - SECTION FINALE  : APPEL A L'ACTION (obligatoire) : ajoute a la fin un encart
      avec un titre en orange (ex. "Et apres la correction ?") puis ce message :
      "Si vous avez un projet de publication, l'essentiel est de bien publier votre
-     livre — en particulier sur Amazon, ou quelques bonnes pratiques font toute la
+     livre, en particulier sur Amazon, ou quelques bonnes pratiques font toute la
      difference pour etre visible et vendre. N'hesitez pas a reserver un appel
      gratuit avec nous pour parler de votre projet, ou a repondre simplement a
      l'e-mail qui accompagne ce rapport."
@@ -69,6 +69,10 @@ INTERDICTIONS DANS LE RAPPORT (tres important)
   "intelligence artificielle", ni decrire la methode/technique employee.
 - Le rapport doit sembler redige par le service Review Me, pas par un outil.
 - Ne pas mentionner de numeros de ligne ; ne pas juger la valeur litteraire.
+- INTERDIT ABSOLU : aucun tiret cadratin ni demi-cadratin nulle part dans le
+  rapport (titres, textes, tableaux). Remplace toujours par une virgule, des
+  parentheses ou deux-points. N'utilise que le trait d union normal quand il
+  est grammaticalement necessaire.
 
 FIN
 Quand output/rapport_correction.docx est cree et correct, termine par le marqueur
