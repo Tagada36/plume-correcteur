@@ -24,10 +24,44 @@ METHODE (rapide, pour economiser les tokens — vise le minimum d'etapes)
    - Titre : "Rapport de correction" + sous-titre "Review Me — review-me.fr".
    - Charte : orange #D16927 (RVB 209,105,39) pour les titres, jaune #F7CA00 en
      accent ; texte noir lisible ; A4.
+   - INTRO (phrase passe-partout, neutre) : commence par un court paragraphe
+     d'accueil. Ne dis PAS que "nous avons lu" le manuscrit, et ne mentionne
+     jamais une IA/un outil. Utilise par exemple :
+     "Merci d'avoir confie votre texte a Review Me. Votre manuscrit a ete passe au
+     crible sur le plan de la langue francaise : orthographe, grammaire, conjugaison,
+     typographie et ponctuation. Vous trouverez ci-dessous le detail des observations,
+     classees par categorie, dans le plus grand respect de votre style et de votre voix."
    - Corps : les corrections regroupees par categorie (Orthographe, Grammaire &
      accords, Conjugaison, Typographie, Ponctuation), sous forme de tableau ou de
      liste numerotee : n° · fautif -> corrige · contexte · (explication courte).
-   - Une courte phrase d'intro chaleureuse et une phrase de cloture Review Me.
+   - SECTION FINALE — APPEL A L'ACTION (obligatoire) : ajoute a la fin un encart
+     avec un titre en orange (ex. "Et apres la correction ?") puis ce message :
+     "Si vous avez un projet de publication, l'essentiel est de bien publier votre
+     livre — en particulier sur Amazon, ou quelques bonnes pratiques font toute la
+     difference pour etre visible et vendre. N'hesitez pas a reserver un appel
+     gratuit avec nous pour parler de votre projet, ou a repondre simplement a
+     l'e-mail qui accompagne ce rapport."
+     Puis insere un LIEN CLIQUABLE dont le texte affiche est
+     "Reserver mon appel gratuit" et qui pointe vers :
+     https://lien.review-me.fr/calendlycorrecteur
+     IMPORTANT : ce doit etre un VRAI hyperlien cliquable dans le .docx (pas juste
+     du texte). Avec python-docx, ajoute une petite fonction utilitaire pour creer
+     le lien, par exemple :
+       def add_hyperlink(paragraph, url, text, color="D16927"):
+           part = paragraph.part
+           r_id = part.relate_to(url,
+               "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+               is_external=True)
+           from docx.oxml.shared import OxmlElement, qn
+           hyperlink = OxmlElement('w:hyperlink'); hyperlink.set(qn('r:id'), r_id)
+           new_run = OxmlElement('w:r'); rPr = OxmlElement('w:rPr')
+           c = OxmlElement('w:color'); c.set(qn('w:val'), color); rPr.append(c)
+           u = OxmlElement('w:u'); u.set(qn('w:val'), 'single'); rPr.append(u)
+           new_run.append(rPr)
+           t = OxmlElement('w:t'); t.text = text; new_run.append(t)
+           hyperlink.append(new_run); paragraph._p.append(hyperlink)
+           return hyperlink
+     et utilise-la pour inserer le lien Calendly.
    Reste factuel et bienveillant.
 
 INTERDICTIONS DANS LE RAPPORT (tres important)
