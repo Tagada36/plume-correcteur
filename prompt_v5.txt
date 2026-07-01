@@ -1,0 +1,104 @@
+PROMPT DE CORRECTION EXHAUSTIVE DE MANUSCRIT LITTÉRAIRE — Version 5.2 (Juin 2026)
+Créé par Jeremie (Review Me) · Optimisé avec Claude (Anthropic)
+
+1. OBJECTIF
+Analyser un manuscrit littéraire en français, corriger TOUTES les fautes linguistiques et
+typographiques en une seule passe exhaustive, et restituer un fichier impeccable — prêt pour
+la publication — en préservant à l'identique la structure, la mise en page, les styles, les
+notes de bas de page et l'intention stylistique de l'auteur.
+RÈGLE ABSOLUE : Tout doit être corrigé DU PREMIER COUP. Un manuscrit qui revient avec des
+erreurs résiduelles est un échec. Rigueur maximale à chaque étape.
+
+2. WORKFLOW OBLIGATOIRE — 8 ÉTAPES DANS L'ORDRE
+Étape 1 — Inventaire initial
+  Déballer le .docx avec scripts/unpack.py — noter le nombre exact de fichiers XML.
+  Vérifier la présence de : word/footnotes.xml · word/endnotes.xml · word/styles.xml.
+  Compter les <w:footnote> dans footnotes.xml — noter ce nombre de référence.
+  Identifier tous les styles (styles.xml) ; compter les sections (sectPr).
+  Glyphes parasites (v5.1) : repérer les caractères de la zone privée Unicode (U+F020–U+F0FF)
+  et les runs en police Symbol/Wingdings. Ils s'affichent en carrés dans le corps et en
+  astérisques/puces dans les notes, souvent accolés aux appels de notes. À recenser dès
+  l'inventaire pour suppression.
+Étape 2 — Extraction et analyse linguistique exhaustive
+  Extraire le texte intégral. Analyser selon les 9 catégories linguistiques (§3) — CHAQUE mot,
+  CHAQUE signe. Scanner tous les motifs §4 (mots collés, tirets, numéros errants, notes inline)
+  et §5 (doubles espaces, virgules sans espace, tirets de dialogue sans espace).
+  Constituer la liste COMPLÈTE des erreurs AVANT de toucher au XML. Un seul passage = tout trouver.
+  Coquilles par interversion/omission de lettres (v5.1) : au-delà du catalogue §4, vérifier chaque
+  mot lexicalement (orthographe réelle), pas seulement les motifs connus. Ex. : « rependre » →
+  reprendre, « renoça » → renonça, « judicaires » → judiciaires.
+Étape 3 — Corrections XML linguistiques
+  str_replace ciblé, count = 1 (une seule occurrence par remplacement).
+Étape 4 — Corrections typographiques automatiques (script)
+  Insécables avant ? ! ; : et après « et avant » ; doubles espaces ; lastRenderedPageBreak
+  supprimés ; césure automatique désactivée.
+  Espace après les points de suspension (v5.1) : une ellipse suivie immédiatement d'un mot ou
+  d'une incise doit recevoir une espace (« retraité…marmonna-t-il » → « retraité… marmonna-t-il »).
+  Ne pas confondre avec le style « …mot » volontaire en début de réplique.
+Étape 5 — Notes de bas de page
+  Convertir toute note inline en vraie footnote Word ; vérifier IDs croissants sans doublon.
+Étape 6 — Pagination
+  Auditer tous les footer*.xml (champ PAGE présent, alignement centré).
+Étape 7 — Checklist structurelle complète
+  Notes, typographie française, dialogues, intégrité fichier.
+Étape 8 — Audit final automatisé
+  Lancer scripts/audit.py. Zéro résultat avant livraison. Détecter aussi : (1) tout caractère
+  U+F020–U+F0FF résiduel ; (2) toute ellipse suivie d'une lettre. Relancer jusqu'à 0.
+
+3. CATÉGORIES D'ANALYSE LINGUISTIQUE
+1. Orthographe — accents, cédilles, traits d'union, majuscules accentuées (É À È), noms propres
+   et composés, mots étrangers. Erreur la plus fréquente : mots collés (§4).
+2. Conjugaison — terminaisons à chaque temps/personne ; passé simple (il partis → il partit) ;
+   participes invariables (suffi ≠ suffit) ; auxiliaires et pronominaux.
+   Concordance des temps (v5.1) : dans un récit au passé, traquer le présent intrus des
+   subordonnées ou apartés historiques (« alors que la Terreur bat son plein » → battait).
+3. Accords — sujet-verbe, adjectifs, participes passés (PP avec avoir : accord si COD avant ;
+   pronominaux : accord si pronom = COD).
+4. Grammaire — syntaxe, pronoms, prépositions, articles.
+5. Homophones — a/à · et/est · ou/où · son/sont · ce/se · c'est/s'est/ces/ses · peu/peut ·
+   leur/leurs · quel que/quelque…
+6. Ponctuation — virgules, points, deux-points, guillemets, tirets ; inversions avec tirets
+   (dit-il, ordonne-t-elle) ; espace après chaque virgule et après tiret de dialogue.
+7. Typographie française — insécables avant ? ! ; : et autour des « » ; apostrophes typographiques
+   (U+2019) ; guillemets « » ; tirets cadratins —.
+8. Traits d'union — peut-être, au-delà, vis-à-vis, ce jour-là ; numéraux composés < 100 ; noms
+   composés officiels.
+9. Cohérence interne — noms propres/lieux uniformes sur tout le texte ; signaler les
+   incohérences avérées.
+
+4. CATALOGUE DES ERREURS RÉCURRENTES — SCAN OBLIGATOIRE
+4.1 Mots collés. 4.2 Tirets manquants (inversions et locutions). 4.3–4.5 Dialogues fusionnés,
+numéros de page errants, notes inline : diviser les répliques fusionnées en paragraphes ;
+supprimer les chiffres seuls alignés à droite dans le corps ; convertir toute note inline en
+vraie footnote Word (jamais keepNext).
+4.6 Alignement et retrait des paragraphes narratifs. Centrage parasite : <w:jc w:val="center"/>
+sur un paragraphe de texte courant long (>40 car.) → remplacer par justifié (both). Conserver le
+centrage sur titres, ***, FIN, numéros de chapitre, pages de garde.
+Anomalies de retrait/liste (v5.1) : comparer le <w:ind> ET le <w:numPr> de chaque paragraphe à
+ceux de ses voisins immédiats. RÈGLE : réaligner = RECOPIER À L'IDENTIQUE le <w:ind> et le
+<w:numPr> d'une réplique voisine correcte — JAMAIS se contenter de supprimer ou mettre à zéro la
+valeur anormale. Pour une réplique en liste (numId), conserver <w:ind w:left="0" w:firstLine="284"/>.
+
+5. PONCTUATION ET ESPACEMENT — CONTRÔLES ADDITIONNELS
+Doubles espaces : re.sub(r'  +',' ',texte) dans chaque <w:t>.
+Virgule sans espace : « Difficilement,elle » → « Difficilement, elle ».
+Tiret de dialogue sans espace : « —Bonjour » → « — Bonjour ».
+Espace après points de suspension (v5.1) : « mot…mot » → « mot… mot ».
+
+6. RÈGLES DE VÉRIFICATION STRICTES
+Vérifier que l'erreur existe réellement dans le XML (count > 0) avant de la lister/corriger.
+Extraire le contexte exact ; confirmer qu'il ne s'agit pas d'un choix stylistique (argot,
+registre familier, québécismes, phonétique, parler des personnages étrangers).
+Ne jamais inventer une erreur, donner un numéro de ligne, ni juger la qualité littéraire.
+Ne jamais livrer sans avoir exécuté le script d'audit (§8) avec un résultat = 0.
+
+7. FORMAT DU RAPPORT DE CORRECTION
+Pour chaque erreur : numéro séquentiel · texte fautif → corrigé · contexte exact (50–100 car.) ·
+explication (uniquement pour accord/conjugaison/homophone). Charte Review Me (orange #D16927,
+jaune #F7CA00), A4 paysage, factuel, sans jugement littéraire.
+
+8. AUDIT FINAL & LIVRABLES — LES 3 SONT OBLIGATOIRES
+1. Manuscrit corrigé (.docx) — repacké avec scripts/pack.py.
+2. Rapport de correction (.docx) — charte Review Me, A4 paysage, tableaux par catégorie.
+3. Liste des erreurs (.txt) — format brut structuré pour copier-coller.
+L'audit scripts/audit.py doit retourner 0 problème avant packaging.

@@ -1,13 +1,5 @@
-# Secrets - NE JAMAIS publier
 .env
-backend/.env
-
-# Donnees generees
-backend/jobs/
-backend/leads.csv
-
-# Python
+jobs/
+leads.csv
 __pycache__/
 *.pyc
-venv/
-.venv/

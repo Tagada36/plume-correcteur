@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', 'VOTRE_PIXEL_ID');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=VOTRE_PIXEL_ID&ev=PageView&noscript=1"/></noscript>
+<!-- End Meta Pixel Code -->
+<title>Plume · Déposez votre manuscrit</title>
+<style>
+  :root{
+    --bg:#faf7f2; --ink:#1c1b18; --muted:#6b6459;
+    --accent:#D16927; --accent-dark:#b1541b; --yellow:#F7CA00;
+    --line:#e6ded2; --card:#fff; --green:#2e7d51;
+    --shadow:0 10px 40px rgba(28,27,24,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Georgia','Times New Roman',serif;background:var(--bg);color:var(--ink);line-height:1.6}
+  .sans{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+
+  header{border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(250,247,242,.92);backdrop-filter:blur(8px);z-index:50}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.3rem;letter-spacing:-.01em}
+  .logo .dot{width:32px;height:32px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:#fff;font-style:italic;font-size:1.2rem;font-family:Georgia,serif}
+  .nav .tag{font-size:.82rem;color:var(--muted)}
+  @media(max-width:640px){.nav .tag{display:none}}
+
+  .hero{padding:72px 0 52px;text-align:center}
+  .pill{display:inline-block;font-family:-apple-system,sans-serif;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:#f7e2d3;padding:6px 14px;border-radius:999px;margin-bottom:24px}
+  .hero h1{font-size:3rem;line-height:1.12;letter-spacing:-.02em;max-width:15ch;margin:0 auto 20px}
+  .hero h1 em{color:var(--accent);font-style:italic}
+  .hero p.lead{font-size:1.18rem;color:var(--muted);max-width:60ch;margin:0 auto 32px}
+  .cta{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;font-family:-apple-system,sans-serif;font-weight:600;font-size:1.05rem;padding:16px 30px;border-radius:12px;text-decoration:none;border:none;cursor:pointer;transition:.15s;box-shadow:var(--shadow)}
+  .cta:hover{background:var(--accent-dark);transform:translateY(-2px)}
+  .compare{margin:36px auto 0;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-family:-apple-system,sans-serif}
+  .compare div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 20px;font-size:.9rem}
+  .compare .old{color:var(--muted);text-decoration:line-through}
+  .compare .new{color:var(--green);font-weight:600}
+  @media(max-width:640px){.hero h1{font-size:2.1rem}.hero{padding:48px 0 36px}}
+
+  section{padding:60px 0}
+  .eyebrow{font-family:-apple-system,sans-serif;text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;color:var(--accent);text-align:center;margin-bottom:12px}
+  h2{font-size:2rem;text-align:center;letter-spacing:-.02em;margin-bottom:14px}
+  .sub{text-align:center;color:var(--muted);max-width:56ch;margin:0 auto 44px;font-size:1.05rem}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px}
+  .step .num{font-family:-apple-system,sans-serif;font-weight:700;font-size:.85rem;color:var(--accent);background:#f7e2d3;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px}
+  .step h3{font-size:1.2rem;margin-bottom:8px}
+  .step p{color:var(--muted);font-size:.98rem}
+  @media(max-width:760px){.steps{grid-template-columns:1fr}}
+
+  #depot{background:linear-gradient(180deg,#fff,#faf7f2)}
+  .form-card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;max-width:640px;margin:12px auto 0}
+  .form-head{height:6px;background:linear-gradient(90deg,var(--accent),var(--yellow))}
+  .form-body{padding:30px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-family:-apple-system,sans-serif;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--ink)}
+  .field .req{color:var(--accent)}
+  .field input[type=text],.field input[type=email]{width:100%;border:1px solid var(--line);border-radius:10px;padding:13px 14px;font-family:-apple-system,sans-serif;font-size:1rem;background:#fffdfa}
+  .field input:focus{outline:none;border-color:var(--accent)}
+  .drop{border:2px dashed var(--line);border-radius:14px;padding:30px 16px;text-align:center;font-family:-apple-system,sans-serif;color:var(--muted);transition:.15s;cursor:pointer}
+  .drop.drag{border-color:var(--accent);background:#fdf3ee}
+  .drop strong{color:var(--accent)}
+  .drop .fn{margin-top:8px;color:var(--ink);font-weight:600}
+  .consent{display:flex;gap:11px;align-items:flex-start;background:#faf7f2;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-family:-apple-system,sans-serif;font-size:.86rem;color:var(--muted);line-height:1.5}
+  .consent input{margin-top:3px;width:18px;height:18px;flex:0 0 auto;accent-color:var(--accent);cursor:pointer}
+  .consent label{cursor:pointer}
+  .consent a{color:var(--accent)}
+  .btn{width:100%;font-family:-apple-system,sans-serif;font-weight:600;font-size:1.05rem;padding:15px;border-radius:12px;border:none;cursor:pointer;background:var(--accent);color:#fff;transition:.15s;margin-top:16px}
+  .btn:hover{background:var(--accent-dark)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .note{font-family:-apple-system,sans-serif;font-size:.78rem;color:var(--muted);text-align:center;margin-top:14px;line-height:1.5}
+
+  #progress{display:none;margin-top:8px}
+  .status{font-family:-apple-system,sans-serif;display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .spinner{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex:0 0 auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  footer{border-top:1px solid var(--line);padding:36px 0;text-align:center;color:var(--muted);font-family:-apple-system,sans-serif;font-size:.85rem;margin-top:40px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo"><img src="logo-reviewme.png" alt="Review Me" width="36" height="36" style="border-radius:9px;display:block"> Plume</div>
+    <div class="tag sans">Correcteur de manuscrits · 100 % gratuit</div>
+  </div>
+</header>
+
+<div class="hero wrap">
+  <span class="pill">Correcteur de manuscrits · gratuit</span>
+  <h1>99,9 % de vos fautes repérées. <em>Gratuitement.</em></h1>
+  <p class="lead">Plume relit votre manuscrit en français de façon exhaustive — orthographe, grammaire, conjugaison, typographie. Vous recevez le manuscrit corrigé et un rapport détaillé <strong>par e-mail</strong>, prêt à appliquer, sans toucher à votre style.</p>
+  <button class="cta" onclick="document.getElementById('depot').scrollIntoView()">Recevoir ma correction gratuitement →</button>
+  <div class="compare">
+    <div class="old sans">Une correction de roman, ailleurs : 300 à 700 €</div>
+    <div class="new sans">Avec Plume : 0 € · sans engagement</div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Comment ça marche</div>
+    <h2>Trois étapes</h2>
+    <div class="steps">
+      <div class="step"><div class="num">01</div><h3>Vous déposez</h3><p>Votre manuscrit en .docx ou .doc, avec votre e-mail.</p></div>
+      <div class="step"><div class="num">02</div><h3>Plume corrige</h3><p>Analyse complète, en une passe exhaustive, sans toucher à votre style.</p></div>
+      <div class="step"><div class="num">03</div><h3>Vous recevez</h3><p>Votre manuscrit corrigé + rapport détaillé, par e-mail.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<section style="padding:48px 0">
+  <div class="wrap">
+    <div class="eyebrow">Ils se sont lancés</div>
+    <h2>…et vous&nbsp;?</h2>
+    <p class="sub">Des auteurs indépendants qui ont publié leur livre. Le vôtre est peut-être le prochain.</p>
+    <img id="banner-auteurs" src="banner-auteurs.png" alt="Auteurs indépendants publiés avec Review Me"
+         style="width:100%;border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow);display:block"
+         onerror="this.style.display='none';document.getElementById('banner-fallback').style.display='block'">
+    <div id="banner-fallback" style="display:none;text-align:center;color:var(--muted);font-family:-apple-system,sans-serif;font-size:.9rem;background:#f7e2d3;border-radius:18px;padding:40px">
+      (Emplacement de la bannière auteurs — déposez le fichier <code>banner-auteurs.png</code>)
+    </div>
+  </div>
+</section>
+
+<section id="depot">
+  <div class="wrap">
+    <div class="eyebrow">Obtenez votre correction</div>
+    <h2>Déposez votre manuscrit</h2>
+    <p class="sub">Formats acceptés : .docx ou .doc · Confidentialité totale · Votre manuscrit ne sera jamais partagé. Votre rapport vous est envoyé par e-mail.</p>
+
+    <div class="form-card">
+      <div class="form-head"></div>
+      <div class="form-body">
+        <form id="form">
+          <div class="field">
+            <label for="name">Votre nom</label>
+            <input type="text" id="name" name="name" placeholder="Prénom Nom">
+          </div>
+          <div class="field">
+            <label for="email">Votre e-mail <span class="req">(obligatoire — pour recevoir le rapport)</span></label>
+            <input type="email" id="email" name="email" placeholder="vous@exemple.fr" required>
+          </div>
+          <div class="field">
+            <label for="title">Titre du manuscrit</label>
+            <input type="text" id="title" name="title" placeholder="Le titre de votre œuvre">
+          </div>
+          <div class="field">
+            <label>Votre manuscrit <span class="req">(obligatoire)</span></label>
+            <div class="drop" id="drop">
+              Glissez votre fichier ici, ou <strong>parcourez</strong>
+              <input type="file" id="file" accept=".docx,.doc" hidden required>
+              <div class="fn" id="fn"></div>
+              <div style="margin-top:6px;font-size:.8rem;opacity:.8">.docx ou .doc · max 25 Mo</div>
+            </div>
+          </div>
+          <div class="consent">
+            <input type="checkbox" id="consent" required>
+            <label for="consent">J'accepte que Plume m'envoie <strong>par e-mail</strong> mon rapport de correction gratuit, ainsi que des <strong>conseils sur l'auto-édition</strong>. Je pourrai me <strong>désinscrire à tout moment</strong> (lien en bas de chaque e-mail). Mes données ne sont jamais partagées et servent uniquement à cet usage. <span class="req">(obligatoire)</span></label>
+          </div>
+          <button type="submit" class="btn" id="submit">Recevoir ma correction par e-mail</button>
+          <div class="note">Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Il vous suffit de nous écrire ou d'utiliser le lien de désinscription.</div>
+        </form>
+
+        <div id="progress">
+          <div class="status">
+            <div class="spinner"></div>
+            <div><div style="font-weight:600">Réception de votre manuscrit…</div>
+            <div style="font-size:.85rem;color:var(--muted)">Un instant, nous préparons votre correction.</div></div>
+          </div>
+        </div>
+
+        <div id="done" style="display:none;text-align:center;padding:10px 4px">
+          <div style="font-size:3rem;line-height:1">📬</div>
+          <h3 style="font-family:Georgia,serif;font-size:1.6rem;margin:10px 0 8px">C'est noté, merci&nbsp;!</h3>
+          <p class="sans" style="color:var(--muted);max-width:44ch;margin:0 auto 6px">
+            Votre correction est en préparation. Vous la recevrez <strong id="mailto2">par e-mail</strong>,
+            avec le manuscrit corrigé et le rapport détaillé.
+          </p>
+          <p class="sans" style="color:var(--muted);font-size:.85rem">Pensez à vérifier vos courriers indésirables (spam).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>Votre manuscrit ne sera jamais partagé, avec qui que ce soit. Confidentialité totale.</div>
+    <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px"><img src="logo-reviewme.png" alt="" width="22" height="22" style="border-radius:5px"> Plume · review-me.fr · correction exhaustive v5.2</div>
+  </div>
+</footer>
+
+<script>
+  var $ = function(s){ return document.querySelector(s); };
+  var fileInput = $('#file'), drop = $('#drop'), fn = $('#fn'), form = $('#form');
+
+  drop.addEventListener('click', function(){ fileInput.click(); });
+  ['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('drag'); }); });
+  ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('drag'); }); });
+  drop.addEventListener('drop', function(e){ if(e.dataTransfer.files[0]){ fileInput.files = e.dataTransfer.files; showName(); } });
+  fileInput.addEventListener('change', showName);
+  function showName(){ if(fileInput.files[0]) fn.textContent = '📄 ' + fileInput.files[0].name; }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = $('#email').value.trim();
+    if(!fileInput.files[0]){ alert('Choisissez votre manuscrit (.docx ou .doc).'); return; }
+    if(email.indexOf('@') < 1){ alert('Une adresse e-mail valide est requise pour recevoir votre rapport.'); return; }
+    if(!$('#consent').checked){ alert('Merci de cocher la case de consentement pour recevoir votre rapport par e-mail.'); return; }
+
+    var fd = new FormData();
+    fd.append('file', fileInput.files[0]);
+    fd.append('name', $('#name').value);
+    fd.append('email', email);
+    fd.append('title', $('#title').value);
+    fd.append('consent', 'oui');
+
+    $('#submit').disabled = true;
+    $('#submit').textContent = 'Envoi en cours…';
+
+    fetch('/api/jobs', { method:'POST', body:fd })
+      .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+      .then(function(res){
+        if(!res.ok || !res.j || !res.j.job_id){
+          alert((res.j && res.j.detail) ? res.j.detail : "L'envoi a été refusé. Réessayez.");
+          $('#submit').disabled = false; $('#submit').textContent = 'Recevoir ma correction par e-mail'; return;
+        }
+        form.style.display = 'none';
+        $('#progress').style.display = 'block';
+        if(window.fbq){ fbq('track','Lead'); }
+        $('#mailto2').textContent = 'par e-mail à ' + email;
+        setTimeout(function(){
+          $('#progress').style.display = 'none';
+          $('#done').style.display = 'block';
+        }, 1600);
+      })
+      .catch(function(){
+        alert("L'envoi a échoué. Vérifiez votre connexion et réessayez.");
+        $('#submit').disabled = false; $('#submit').textContent = 'Recevoir ma correction par e-mail';
+      });
+  });
+</script>
+</body>
+</html>
