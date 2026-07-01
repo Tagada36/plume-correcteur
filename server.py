@@ -60,7 +60,7 @@ def _run(job_id, job_dir, input_docx, name, email, title, filename, token, base_
             _log(job_id, "Correction terminee.")
             # Lien de telechargement du rapport (page protegee par jeton)
             root = PUBLIC_BASE_URL or base_url
-            report_link = f"{root}/r/{job_id}?t={token}"
+            report_link = f"{root}/r/{job_id}/{token}"
             try:
                 if os.environ.get("SYSTEMEIO_API_KEY"):
                     dbg = systemeio.push_lead(email, name, report_link=report_link)
@@ -140,28 +140,29 @@ def _check_token(job_id, t):
     return tf.exists() and t and tf.read_text(encoding="utf-8").strip() == t
 
 
-@app.get("/r/{job_id}", response_class=HTMLResponse)
-def report_page(job_id: str, t: str = ""):
-    if not _check_token(job_id, t):
+@app.get("/r/{job_id}/{token}", response_class=HTMLResponse)
+def report_page(job_id: str, token: str = "", sc: str = ""):
+    # jeton dans le CHEMIN : robuste au suivi de clics des e-mails (Gmail/systeme.io)
+    if not _check_token(job_id, token):
         raise HTTPException(403, "Lien invalide ou expire.")
     out = JOBS_DIR / job_id / "output"
     files = [p.name for p in out.glob("*")] if out.exists() else []
     if not files:
         return "<h2>Votre correction est encore en préparation. Réessayez dans quelques minutes.</h2>"
     links = "".join(
-        f'<li><a href="/r/{job_id}/{f}?t={t}">{f}</a></li>' for f in files)
+        f'<li><a href="/r/{job_id}/{token}/{f}">{f}</a></li>' for f in files)
     return f"""<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
 <title>Votre correction Plume</title>
 <style>body{{font-family:-apple-system,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;color:#1c1b18}}
 h1{{color:#D16927}} a{{color:#D16927;font-weight:600}} li{{margin:10px 0}}</style></head>
 <body><h1>Votre correction est prête 🎉</h1>
-<p>Voici vos fichiers, prêts à télécharger :</p><ul>{links}</ul>
+<p>Voici votre rapport, prêt à télécharger :</p><ul>{links}</ul>
 <p style="color:#6b6459;font-size:.9rem">Review Me · review-me.fr</p></body></html>"""
 
 
-@app.get("/r/{job_id}/{fname}")
-def report_file(job_id: str, fname: str, t: str = ""):
-    if not _check_token(job_id, t):
+@app.get("/r/{job_id}/{token}/{fname}")
+def report_file(job_id: str, token: str, fname: str, sc: str = ""):
+    if not _check_token(job_id, token):
         raise HTTPException(403, "Lien invalide.")
     if "/" in fname or ".." in fname:
         raise HTTPException(404, "Introuvable.")
@@ -184,7 +185,7 @@ def test_systeme(token: str = "", email: str = "test@exemple.fr"):
     if not ADMIN_TOKEN or token != ADMIN_TOKEN:
         raise HTTPException(403, "Acces refuse.")
     try:
-        link = (PUBLIC_BASE_URL or "https://plume-correcteur.onrender.com") + "/r/DEMO?t=demo"
+        link = (PUBLIC_BASE_URL or "https://plume-correcteur.onrender.com") + "/r/DEMO/demo"
         return {"ok": True, "result": systemeio.push_lead(email, "Test Plume", report_link=link)}
     except Exception as e:
         return {"ok": False, "error": repr(e)}
