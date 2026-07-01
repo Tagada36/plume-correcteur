@@ -69,7 +69,7 @@ def send_report(to_email: str, author_name: str, manuscript_title: str,
         msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=name)
 
     context = ssl.create_default_context()
-    with smtplib.SMTP(host, port) as server:
+    with smtplib.SMTP(host, port, timeout=20) as server:
         server.starttls(context=context)
         server.login(user, password)
         server.send_message(msg)
@@ -99,7 +99,7 @@ def send_lead_notification(name: str, email: str, title: str, filename: str) -> 
         "Le rapport de correction lui sera envoye automatiquement une fois pret."
     )
     context = ssl.create_default_context()
-    with smtplib.SMTP(host, port) as server:
+    with smtplib.SMTP(host, port, timeout=20) as server:
         server.starttls(context=context)
         server.login(user, password)
         server.send_message(msg)

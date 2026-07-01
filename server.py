@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
-"""server.py - Serveur Plume (FastAPI) - MODE LEAD MAGNET - version a plat (racine)."""
+"""server.py - Plume (FastAPI) - LEAD MAGNET via systeme.io (a plat)."""
 import os
 import csv
 import uuid
+import secrets
 import threading
 import pathlib
 from datetime import datetime
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 
 import agent
-import emailer
+import systemeio
 
 BASE = pathlib.Path(__file__).parent
 JOBS_DIR = BASE / "jobs"
 JOBS_DIR.mkdir(exist_ok=True)
 LEADS_CSV = BASE / "leads.csv"
 ADMIN_TOKEN = os.environ.get("PLUME_ADMIN_TOKEN", "")
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
 MAX_MB = int(os.environ.get("PLUME_MAX_UPLOAD_MB", "25"))
 
-app = FastAPI(title="Plume - Correcteur (lead magnet)")
+app = FastAPI(title="Plume - Correcteur (systeme.io)")
 JOBS = {}
 LOCK = threading.Lock()
 
@@ -37,40 +39,30 @@ def save_lead(name, email, title, filename, consent):
 def _set(job_id, **kw):
     with LOCK:
         JOBS.setdefault(job_id, {}).update(kw)
-        JOBS[job_id].setdefault("log", [])
 
 
 def _log(job_id, msg):
-    print(f"[JOB {job_id}] {msg}", flush=True)   # visible dans les logs Render
-    with LOCK:
-        JOBS[job_id]["log"].append(f"{datetime.now():%H:%M:%S} {msg}")
-        JOBS[job_id]["log"] = JOBS[job_id]["log"][-200:]
+    print(f"[JOB {job_id}] {msg}", flush=True)
 
 
-def _run(job_id, job_dir, input_docx, name, email, title, filename):
+def _run(job_id, job_dir, input_docx, name, email, title, filename, token, base_url):
     _set(job_id, status="running")
-    try:
-        if os.environ.get("SMTP_USER"):
-            emailer.send_lead_notification(name, email, title, filename)
-            _log(job_id, "Notification lead envoyee a l'admin.")
-    except Exception as e:
-        _log(job_id, f"Notification lead echouee : {e}")
     _log(job_id, "Demarrage de la correction v5.2...")
     try:
         result = agent.run_job(job_dir, input_docx, progress=lambda m: _log(job_id, m))
-        _set(job_id, result=result)
         if result["status"] == "ok":
             _set(job_id, status="done",
                  deliverables=[os.path.basename(p) for p in result["deliverables"]])
             _log(job_id, "Correction terminee.")
+            # Lien de telechargement du rapport (page protegee par jeton)
+            root = PUBLIC_BASE_URL or base_url
+            report_link = f"{root}/r/{job_id}?t={token}"
             try:
-                if email and os.environ.get("SMTP_USER"):
-                    emailer.send_report(email, name, title or "votre manuscrit",
-                                        result["deliverables"],
-                                        summary=f"Traitement effectue en {result['turns']} etapes.")
-                    _log(job_id, f"Rapport envoye a {email}.")
+                if os.environ.get("SYSTEMEIO_API_KEY"):
+                    dbg = systemeio.push_lead(email, name, report_link=report_link)
+                    _log(job_id, "systeme.io (rapport pret): " + dbg)
             except Exception as e:
-                _log(job_id, f"Envoi e-mail echoue : {e}")
+                _log(job_id, f"systeme.io maj rapport echouee : {e}")
         else:
             _set(job_id, status="error")
             _log(job_id, f"Echec : {result['message']}")
@@ -98,7 +90,7 @@ def banner():
 
 
 @app.post("/api/jobs")
-async def create_job(file: UploadFile = File(...), name: str = Form(""),
+async def create_job(request: Request, file: UploadFile = File(...), name: str = Form(""),
                      email: str = Form(""), title: str = Form(""), consent: str = Form("")):
     if not file.filename.lower().endswith((".docx", ".doc")):
         raise HTTPException(400, "Format non pris en charge. Utilisez .docx ou .doc.")
@@ -111,27 +103,86 @@ async def create_job(file: UploadFile = File(...), name: str = Form(""),
     data = await file.read()
     if len(data) > MAX_MB * 1024 * 1024:
         raise HTTPException(413, f"Fichier trop volumineux (max {MAX_MB} Mo).")
+
     save_lead(name.strip(), email, (title or "").strip(), file.filename, "oui")
+
     job_id = uuid.uuid4().hex[:12]
+    token = secrets.token_urlsafe(12)
     job_dir = JOBS_DIR / job_id
     job_dir.mkdir(parents=True, exist_ok=True)
-    input_path = job_dir / "input.docx"
-    input_path.write_bytes(data)
-    _set(job_id, status="queued")
-    _log(job_id, f"Manuscrit recu : {file.filename} ({len(data)//1024} Ko).")
+    (job_dir / "input.docx").write_bytes(data)
+    (job_dir / "token.txt").write_text(token, encoding="utf-8")
+    _set(job_id, status="queued", token=token)
+    _log(job_id, f"Manuscrit recu : {file.filename} ({len(data)//1024} Ko) de {email}.")
+
+    # Capture immediate du lead dans systeme.io (avant meme la correction).
+    try:
+        if os.environ.get("SYSTEMEIO_API_KEY"):
+            dbg = systemeio.push_lead(email, name.strip())
+            _log(job_id, "systeme.io (capture): " + dbg)
+    except Exception as e:
+        _log(job_id, f"systeme.io capture echouee : {e}")
+
+    base_url = str(request.base_url).rstrip("/")
     threading.Thread(target=_run,
-                     args=(job_id, str(job_dir), str(input_path), name, email, title, file.filename),
+                     args=(job_id, str(job_dir), str(job_dir / "input.docx"),
+                           name, email, title, file.filename, token, base_url),
                      daemon=True).start()
     return {"job_id": job_id, "status": "queued"}
+
+
+def _check_token(job_id, t):
+    tf = JOBS_DIR / job_id / "token.txt"
+    return tf.exists() and t and tf.read_text(encoding="utf-8").strip() == t
+
+
+@app.get("/r/{job_id}", response_class=HTMLResponse)
+def report_page(job_id: str, t: str = ""):
+    if not _check_token(job_id, t):
+        raise HTTPException(403, "Lien invalide ou expire.")
+    out = JOBS_DIR / job_id / "output"
+    files = [p.name for p in out.glob("*")] if out.exists() else []
+    if not files:
+        return "<h2>Votre correction est encore en préparation. Réessayez dans quelques minutes.</h2>"
+    links = "".join(
+        f'<li><a href="/r/{job_id}/{f}?t={t}">{f}</a></li>' for f in files)
+    return f"""<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+<title>Votre correction Plume</title>
+<style>body{{font-family:-apple-system,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;color:#1c1b18}}
+h1{{color:#D16927}} a{{color:#D16927;font-weight:600}} li{{margin:10px 0}}</style></head>
+<body><h1>Votre correction est prête 🎉</h1>
+<p>Voici vos fichiers, prêts à télécharger :</p><ul>{links}</ul>
+<p style="color:#6b6459;font-size:.9rem">Review Me · review-me.fr</p></body></html>"""
+
+
+@app.get("/r/{job_id}/{fname}")
+def report_file(job_id: str, fname: str, t: str = ""):
+    if not _check_token(job_id, t):
+        raise HTTPException(403, "Lien invalide.")
+    if "/" in fname or ".." in fname:
+        raise HTTPException(404, "Introuvable.")
+    path = JOBS_DIR / job_id / "output" / fname
+    if not path.exists():
+        raise HTTPException(404, "Introuvable.")
+    return FileResponse(str(path), filename=fname)
 
 
 @app.get("/api/jobs/{job_id}")
 def job_status(job_id: str):
     with LOCK:
         j = JOBS.get(job_id)
-        if not j:
-            raise HTTPException(404, "Job inconnu.")
-        return JSONResponse({"status": j.get("status")})
+        return JSONResponse({"status": (j or {}).get("status", "unknown")})
+
+
+@app.get("/api/test-systeme")
+def test_systeme(token: str = "", email: str = "test@exemple.fr"):
+    """Teste la connexion systeme.io. /api/test-systeme?token=JETON&email=toi@mail.fr"""
+    if not ADMIN_TOKEN or token != ADMIN_TOKEN:
+        raise HTTPException(403, "Acces refuse.")
+    try:
+        return {"ok": True, "result": systemeio.push_lead(email, "Test Plume")}
+    except Exception as e:
+        return {"ok": False, "error": repr(e)}
 
 
 @app.get("/api/leads")
@@ -143,32 +194,7 @@ def export_leads(token: str = ""):
     return FileResponse(str(LEADS_CSV), filename="leads.csv", media_type="text/csv")
 
 
-@app.get("/api/jobs/{job_id}/download/{fname}")
-def download(job_id: str, fname: str, token: str = ""):
-    if not ADMIN_TOKEN or token != ADMIN_TOKEN:
-        raise HTTPException(403, "Acces refuse.")
-    if "/" in fname or ".." in fname:
-        raise HTTPException(404, "Fichier introuvable.")
-    path = JOBS_DIR / job_id / "output" / fname
-    if not path.exists():
-        raise HTTPException(404, "Fichier introuvable.")
-    return FileResponse(str(path), filename=fname)
-
-
-@app.get("/api/test-mail")
-def test_mail(token: str = ""):
-    """Teste l'envoi d'e-mail en isolation. /api/test-mail?token=TON_JETON"""
-    if not ADMIN_TOKEN or token != ADMIN_TOKEN:
-        raise HTTPException(403, "Acces refuse.")
-    try:
-        emailer.send_lead_notification("Test Plume", os.environ.get("MAIL_ADMIN", "?"),
-                                       "Test", "test.docx")
-        return {"ok": True, "message": "E-mail de test envoye. Verifie ta boite (et les spams)."}
-    except Exception as e:
-        return {"ok": False, "error": repr(e)}
-
-
 @app.get("/api/health")
 def health():
     return {"ok": True, "model": os.environ.get("PLUME_MODEL", "claude-opus-4-8"),
-            "smtp": bool(os.environ.get("SMTP_USER")), "leads": LEADS_CSV.exists()}
+            "systemeio": bool(os.environ.get("SYSTEMEIO_API_KEY"))}
