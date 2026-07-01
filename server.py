@@ -15,9 +15,13 @@ import agent
 import systemeio
 
 BASE = pathlib.Path(__file__).parent
-JOBS_DIR = BASE / "jobs"
-JOBS_DIR.mkdir(exist_ok=True)
-LEADS_CSV = BASE / "leads.csv"
+# Dossier de donnees PERSISTANT (disque Render) si PLUME_DATA_DIR est defini,
+# sinon on retombe sur le dossier local (ephemere).
+DATA_DIR = pathlib.Path(os.environ.get("PLUME_DATA_DIR", str(BASE)))
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+JOBS_DIR = DATA_DIR / "jobs"
+JOBS_DIR.mkdir(parents=True, exist_ok=True)
+LEADS_CSV = DATA_DIR / "leads.csv"
 ADMIN_TOKEN = os.environ.get("PLUME_ADMIN_TOKEN", "")
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
 MAX_MB = int(os.environ.get("PLUME_MAX_UPLOAD_MB", "25"))
