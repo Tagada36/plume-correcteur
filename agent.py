@@ -82,6 +82,10 @@ TOOLS = [
     },
 ]
 
+# Mise en cache (prompt caching) : le dernier outil porte le marqueur, ce qui met en
+# cache la definition des outils ET le system prompt (facturees ~10% en relecture).
+TOOLS[-1]["cache_control"] = {"type": "ephemeral"}
+
 
 def _safe_path(job_dir: pathlib.Path, rel: str) -> pathlib.Path:
     p = (job_dir / rel).resolve()
@@ -183,7 +187,27 @@ def run_job(job_dir: str, input_docx: str, progress=None) -> dict:
             progress(msg)
 
     client = Anthropic()  # lit ANTHROPIC_API_KEY
-    system = build_system_prompt()
+    system_text = build_system_prompt()
+    # System prompt mis en cache
+    system = [{"type": "text", "text": system_text, "cache_control": {"type": "ephemeral"}}]
+
+    def _mark_cache(msgs):
+        # retire les anciens marqueurs sur les messages utilisateur
+        for m in msgs:
+            c = m.get("content")
+            if isinstance(c, list):
+                for b in c:
+                    if isinstance(b, dict):
+                        b.pop("cache_control", None)
+        # pose un marqueur sur le dernier message s'il est modifiable (texte ou tool_result)
+        if msgs:
+            last = msgs[-1]
+            c = last.get("content")
+            if isinstance(c, str):
+                last["content"] = [{"type": "text", "text": c,
+                                    "cache_control": {"type": "ephemeral"}}]
+            elif isinstance(c, list) and c and isinstance(c[-1], dict):
+                c[-1]["cache_control"] = {"type": "ephemeral"}
     messages = [{
         "role": "user",
         "content": (
@@ -196,6 +220,7 @@ def run_job(job_dir: str, input_docx: str, progress=None) -> dict:
     turns = 0
     while turns < MAX_TURNS:
         turns += 1
+        _mark_cache(messages)
         resp = client.messages.create(
             model=MODEL, max_tokens=8000, system=system, tools=TOOLS, messages=messages,
         )
