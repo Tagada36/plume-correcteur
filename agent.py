@@ -168,9 +168,11 @@ def run_job(job_dir: str, input_docx: str, progress=None) -> dict:
     for _name in ("unpack.py", "pack.py", "audit.py"):
         (dst_scripts / _name).write_text((SCRIPTS_DIR / _name).read_text(encoding="utf-8"), encoding="utf-8")
 
-    # copie du manuscrit en input.docx
-    import shutil
-    shutil.copy(input_docx, job / "input.docx")
+    # copie du manuscrit en input.docx (sauf s'il y est deja)
+    import shutil, os as _os
+    dest = job / "input.docx"
+    if _os.path.abspath(str(input_docx)) != _os.path.abspath(str(dest)):
+        shutil.copy(input_docx, dest)
 
     def log(msg):
         if progress:
