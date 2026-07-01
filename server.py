@@ -41,6 +41,7 @@ def _set(job_id, **kw):
 
 
 def _log(job_id, msg):
+    print(f"[JOB {job_id}] {msg}", flush=True)   # visible dans les logs Render
     with LOCK:
         JOBS[job_id]["log"].append(f"{datetime.now():%H:%M:%S} {msg}")
         JOBS[job_id]["log"] = JOBS[job_id]["log"][-200:]
@@ -152,6 +153,19 @@ def download(job_id: str, fname: str, token: str = ""):
     if not path.exists():
         raise HTTPException(404, "Fichier introuvable.")
     return FileResponse(str(path), filename=fname)
+
+
+@app.get("/api/test-mail")
+def test_mail(token: str = ""):
+    """Teste l'envoi d'e-mail en isolation. /api/test-mail?token=TON_JETON"""
+    if not ADMIN_TOKEN or token != ADMIN_TOKEN:
+        raise HTTPException(403, "Acces refuse.")
+    try:
+        emailer.send_lead_notification("Test Plume", os.environ.get("MAIL_ADMIN", "?"),
+                                       "Test", "test.docx")
+        return {"ok": True, "message": "E-mail de test envoye. Verifie ta boite (et les spams)."}
+    except Exception as e:
+        return {"ok": False, "error": repr(e)}
 
 
 @app.get("/api/health")
