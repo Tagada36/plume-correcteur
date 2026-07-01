@@ -1,0 +1,28 @@
+# Configuration Render pour Plume (deploiement automatique)
+# Render lit ce fichier et cree le service tout seul.
+services:
+  - type: web
+    name: plume-correcteur
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn server:app --host 0.0.0.0 --port $PORT"
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: ANTHROPIC_API_KEY
+        sync: false          # a saisir dans le dashboard Render (secret)
+      - key: PLUME_ADMIN_TOKEN
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_ADMIN
+        sync: false
+      - key: PLUME_MODEL
+        value: "claude-opus-4-8"
