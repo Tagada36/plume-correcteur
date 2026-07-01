@@ -138,17 +138,17 @@ def _exec_tool(name: str, args: dict, job_dir: pathlib.Path) -> str:
 def build_system_prompt() -> str:
     prompt = PROMPT_FILE.read_text(encoding="utf-8")
     return (
-        "Tu es le correcteur de manuscrits Review Me / Plume. Tu appliques STRICTEMENT le "
-        "prompt de correction exhaustive v5.2 reproduit ci-dessous. Tu travailles de facon "
-        "autonome via les outils fournis (run_bash, read_file, write_file, str_replace).\n\n"
-        "ENVIRONNEMENT : le dossier de travail contient le manuscrit d'entree (input.docx) et "
-        "un sous-dossier scripts/ avec unpack.py, pack.py, audit.py. Tu dois produire dans "
-        "output/ : manuscrit_corrige.docx, rapport_correction.docx, liste_erreurs.txt.\n\n"
-        "CONTRAINTES : n'invente jamais d'erreur ; ne juge jamais la qualite litteraire ; "
-        "preserve la mise en page et le style. L'audit (scripts/audit.py) doit renvoyer 0 "
-        "AVANT de packager le .docx corrige. Quand les 3 livrables sont dans output/ et que "
-        "l'audit renvoie 0, termine par le marqueur exact : <<TERMINE>>.\n\n"
-        "=== PROMPT v5.2 ===\n" + prompt
+        "Tu es le correcteur du service Review Me. Tu travailles de facon autonome via les "
+        "outils fournis (run_bash, read_file, write_file, str_replace) et python-docx.\n\n"
+        "ENVIRONNEMENT : le dossier de travail contient le manuscrit input.docx, l'image "
+        "logo-reviewme.png (a inserer dans le rapport) et un sous-dossier scripts/ avec "
+        "unpack.py (extraction facultative). Tu dois produire UN SEUL fichier : "
+        "output/rapport_correction.docx. Aucun autre fichier.\n\n"
+        "OBJECTIF TOKENS : va au plus court, un minimum d'etapes, pas de relecture multiple, "
+        "pas de boucle d'audit, pas de reecriture du manuscrit.\n\n"
+        "Quand output/rapport_correction.docx est pret, termine par le marqueur exact : "
+        "<<TERMINE>>.\n\n"
+        "=== CONSIGNES ===\n" + prompt
     )
 
 
@@ -165,7 +165,7 @@ def run_job(job_dir: str, input_docx: str, progress=None) -> dict:
     # copie des scripts dans le dossier de travail
     dst_scripts = job / "scripts"
     dst_scripts.mkdir(exist_ok=True)
-    for _name in ("unpack.py", "pack.py", "audit.py"):
+    for _name in ("unpack.py",):
         (dst_scripts / _name).write_text((SCRIPTS_DIR / _name).read_text(encoding="utf-8"), encoding="utf-8")
 
     # copie du manuscrit en input.docx (sauf s'il y est deja)
@@ -173,6 +173,10 @@ def run_job(job_dir: str, input_docx: str, progress=None) -> dict:
     dest = job / "input.docx"
     if _os.path.abspath(str(input_docx)) != _os.path.abspath(str(dest)):
         shutil.copy(input_docx, dest)
+    # copie du logo pour l'inserer dans le rapport
+    _logo = pathlib.Path(__file__).parent / "logo-reviewme.png"
+    if _logo.exists():
+        shutil.copy(str(_logo), str(job / "logo-reviewme.png"))
 
     def log(msg):
         if progress:
@@ -183,9 +187,9 @@ def run_job(job_dir: str, input_docx: str, progress=None) -> dict:
     messages = [{
         "role": "user",
         "content": (
-            "Corrige le manuscrit input.docx en suivant integralement le prompt v5.2. "
-            "Commence par l'etape 1 (scripts/unpack.py input.docx work). Produis les 3 "
-            "livrables dans output/. N'oublie pas l'audit final a 0 avant de packager."
+            "Analyse input.docx et produis UNIQUEMENT output/rapport_correction.docx, "
+            "avec le logo logo-reviewme.png en en-tete, aux couleurs Review Me. "
+            "Ne reecris pas le manuscrit, ne cree aucun autre fichier. Va au plus court."
         ),
     }]
 
@@ -208,7 +212,7 @@ def run_job(job_dir: str, input_docx: str, progress=None) -> dict:
             if "<<TERMINE>>" in final_text:
                 break
             # sinon, on relance en demandant de continuer
-            messages.append({"role": "user", "content": "Continue jusqu'a livrer les 3 fichiers et audit=0, puis ecris <<TERMINE>>."})
+            messages.append({"role": "user", "content": "Continue jusqu'a produire output/rapport_correction.docx, puis ecris <<TERMINE>>."})
             continue
 
         # executer les outils demandes
@@ -226,7 +230,7 @@ def run_job(job_dir: str, input_docx: str, progress=None) -> dict:
 
     # verifier les livrables
     out = job / "output"
-    expected = ["manuscrit_corrige.docx", "rapport_correction.docx", "liste_erreurs.txt"]
+    expected = ["rapport_correction.docx"]
     delivered = [str(out / n) for n in expected if (out / n).exists()]
     status = "ok" if len(delivered) == len(expected) else "incomplet"
     return {
