@@ -22,7 +22,7 @@ import urllib.parse
 BASE = "https://api.systeme.io/api"
 
 
-def _req(method, path, payload=None):
+def _req(method, path, payload=None, content_type="application/json"):
     key = os.environ["SYSTEMEIO_API_KEY"]
     url = BASE + path
     data = json.dumps(payload).encode("utf-8") if payload is not None else None
@@ -30,7 +30,7 @@ def _req(method, path, payload=None):
     req.add_header("X-API-Key", key)
     req.add_header("accept", "application/json")
     if data is not None:
-        req.add_header("Content-Type", "application/json")
+        req.add_header("Content-Type", content_type)
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             body = resp.read().decode(errors="replace")
@@ -75,7 +75,8 @@ def add_tag(contact_id, tag_id):
 def set_field(contact_id, slug, value):
     """Best effort : enregistre une valeur dans un champ perso du contact."""
     status, body = _req("PATCH", f"/contacts/{contact_id}",
-                        {"fields": [{"slug": slug, "value": value}]})
+                        {"fields": [{"slug": slug, "value": value}]},
+                        content_type="application/merge-patch+json")
     return f"set_field {slug} -> {status}: {body[:200]}"
 
 

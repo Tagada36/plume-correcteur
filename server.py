@@ -180,7 +180,8 @@ def test_systeme(token: str = "", email: str = "test@exemple.fr"):
     if not ADMIN_TOKEN or token != ADMIN_TOKEN:
         raise HTTPException(403, "Acces refuse.")
     try:
-        return {"ok": True, "result": systemeio.push_lead(email, "Test Plume")}
+        link = (PUBLIC_BASE_URL or "https://plume-correcteur.onrender.com") + "/r/DEMO?t=demo"
+        return {"ok": True, "result": systemeio.push_lead(email, "Test Plume", report_link=link)}
     except Exception as e:
         return {"ok": False, "error": repr(e)}
 
